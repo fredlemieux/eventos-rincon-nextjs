@@ -1,7 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { APIProvider } from '@vis.gl/react-google-maps';
+import { eventFormSchema } from '@/lib/validator';
+import { eventDefaultValues } from '@/constants';
+import { useUploadThing } from '@/lib/uploadthing';
+import { createEvent, updateEvent } from '@/lib/actions/event.actions';
+import { IEvent } from '@/lib/database/models/event.model';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -10,23 +22,13 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { eventFormSchema } from '@/lib/validator';
-import * as z from 'zod';
-import { eventDefaultValues } from '@/constants';
 import Dropdown from './Dropdown';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FileUploader } from './FileUploader';
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import DatePicker from 'react-datepicker';
-import { useUploadThing } from '@/lib/uploadthing';
-
-import 'react-datepicker/dist/react-datepicker.css';
 import { Checkbox } from '../ui/checkbox';
-import { useRouter } from 'next/navigation';
-import { createEvent, updateEvent } from '@/lib/actions/event.actions';
-import { IEvent } from '@/lib/database/models/event.model';
+import * as React from 'react';
+import { PlaceAutocompleteInput } from '@/components/shared/PlacesAutocompleteInput';
 
 type EventFormProps = {
   userId: string;
@@ -37,6 +39,11 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [place, setPlace] = useState<
+    google.maps.places.PlaceResult | undefined
+  >(undefined);
+
   const initialValues =
     event && type === 'Update'
       ? {
@@ -53,7 +60,7 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues,
   });
-  const { watch, setValue } = form;
+  const { watch, setValue, getValues } = form;
 
   const price = watch('price');
   const isFree = watch('isFree');
@@ -142,6 +149,13 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     }
   }
 
+  function onPlaceSelect(place: google.maps.places.PlaceResult | null) {
+    if (place && place?.formatted_address) {
+      setValue('location', place.formatted_address);
+      setPlace(place);
+    }
+  }
+
   return (
     <Form {...form}>
       <form
@@ -225,18 +239,27 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
               <FormItem className='w-full'>
                 <FormControl>
                   <div className='flex-center h-[54px] w-full overflow-hidden rounded-md bg-grey-50 px-4 py-2'>
-                    <Image
-                      src='/assets/icons/location-grey.svg'
-                      alt='calendar'
-                      width={24}
-                      height={24}
-                    />
-
-                    <Input
-                      placeholder='Event location or Online'
-                      {...field}
-                      className='input-field'
-                    />
+                    <APIProvider
+                      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+                    >
+                      <Image
+                        src='/assets/icons/location-grey.svg'
+                        alt='calendar'
+                        width={24}
+                        height={24}
+                      />
+                      <PlaceAutocompleteInput
+                        onPlaceSelect={onPlaceSelect}
+                        props={field}
+                        fallback={
+                          <Input
+                            placeholder='Event location or Online'
+                            {...field}
+                            className='input-field'
+                          />
+                        }
+                      />
+                    </APIProvider>
                   </div>
                 </FormControl>
                 <FormMessage />
