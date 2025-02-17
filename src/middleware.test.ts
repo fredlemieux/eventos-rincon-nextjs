@@ -12,7 +12,7 @@ jest.mock('@clerk/nextjs/server', () => ({
   },
 }));
 
-jest.mock('next-intl/middleware', () => () => (req: NextRequest) => {
+jest.mock('next-intl/middleware', () => () => () => {
   return NextResponse.next();
 });
 
