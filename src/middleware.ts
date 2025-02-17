@@ -8,10 +8,20 @@ const isProtectedRoute = createRouteMatcher([
   ':local/profile',
 ]);
 
+// /api routes will handle their own auth if necessary
+const isApiRoute = createRouteMatcher(['/api/(.*)']);
+
 const handleI18nRouting = createMiddleware(routing);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect();
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+
+  // Exclude api/ routes from i18n routing
+  if (isApiRoute(req)) {
+    return; // Let the API route handle the response
+  }
 
   return handleI18nRouting(req);
 });
