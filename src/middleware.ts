@@ -20,7 +20,6 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Exclude api/ routes from i18n routing
   if (isApiRoute(req)) {
-    console.log('API route accessed');
     return; // Let the API route handle the response
   }
 
