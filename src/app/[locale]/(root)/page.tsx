@@ -1,4 +1,4 @@
-import CategoryFilter from '@/components/shared/CategoryFilter';
+import FilterCategory from '@/components/shared/FilterCategory';
 import Collection from '@/components/shared/Collection';
 import Search from '@/components/shared/Search';
 import { Button } from '@/components/ui/button';
@@ -7,15 +7,19 @@ import { SearchParamProps } from '@/types/parameters.types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import DatePicker from 'react-datepicker';
+import FilterDate from '@/components/shared/FilterDate';
 
 export default async function Home({ searchParams }: SearchParamProps) {
   const page = Number(searchParams?.page) || 1;
-  const searchText = (searchParams?.query as string) || '';
+  const from = searchParams?.from ? String(searchParams?.from) : '';
+  const to = searchParams?.to ? String(searchParams?.to) : '';
   const category = (searchParams?.category as string) || '';
 
   const events = await getAllEvents({
-    query: searchText,
     category,
+    from,
+    to,
     page,
     limit: 6,
   });
@@ -48,10 +52,16 @@ export default async function Home({ searchParams }: SearchParamProps) {
         id='events'
         className='wrapper my-8 flex flex-col gap-8 md:gap-12'
       >
-        <div className='flex w-full flex-col gap-5 md:flex-row'>
-          <Search />
-          <CategoryFilter />
+        {/*<div className='flex w-full flex-col flex-wrap'>*/}
+        <div className='flex flex-row flex-wrap items-center justify-center gap-2 text-lg'>
+          Give me
+          <FilterCategory className='min-w-[120px] max-w-[200px] shrink-0' />
+          events from
+          <FilterDate urlParam='from' className='max-w-[150px] text-sm' />
+          to
+          <FilterDate urlParam='to' className='max-w-[150px] text-sm' />
         </div>
+        {/*</div>*/}
 
         <Collection
           data={events?.data}

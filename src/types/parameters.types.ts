@@ -38,10 +38,11 @@ export type DeleteEventParams = {
 };
 
 export type GetAllEventsParams = {
-  query: string;
   category: string;
   limit: number;
   page: number;
+  from?: string;
+  to?: string;
 };
 
 export type GetEventsByUserParams = {

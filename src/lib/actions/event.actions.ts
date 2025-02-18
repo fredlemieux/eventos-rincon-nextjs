@@ -11,7 +11,7 @@ import {
   IEventPopulated,
   CreateEventModelParams,
 } from '@/lib/database/models';
-import { handleError } from '@/lib/utils';
+import { formatDateTime, handleError } from '@/lib/utils';
 import {
   checkAndReturnObjectId,
   documentToJSON,
@@ -176,26 +176,30 @@ export async function deleteEvent({
 }
 
 export async function getAllEvents({
-  query,
   limit = 6,
   page,
   category,
+  from,
+  to,
 }: GetAllEventsParams) {
   try {
     await connectToDatabase();
 
-    const titleCondition = query
-      ? { title: { $regex: query, $options: 'i' } }
-      : {};
+    const parsedFrom =
+      from && from.length > 0 ? from : formatDateTime().dateIso; // Handle empty strings
+    const parsedTo = to && to.length > 0 ? to : undefined;
+
     const categoryCondition = category
       ? await getCategoryByName(category)
       : null;
     const conditions = {
       $and: [
-        titleCondition,
+        parsedFrom ? { startDateTime: { $gte: parsedFrom } } : {},
+        parsedTo ? { startDateTime: { $lte: parsedFrom } } : {},
         categoryCondition ? { category: categoryCondition._id } : {},
       ],
     };
+    console.log('CONDITIONS:', JSON.stringify(conditions, null, 2));
 
     const skipAmount = (Number(page) - 1) * limit;
     return await queryAndReturnEvents(conditions, skipAmount, limit);

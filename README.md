@@ -31,6 +31,12 @@ Evently at [https://nextjs-evently-sabir.vercel.app/](https://nextjs-evently-sab
 - **Docker:** For the development environment, but feel free to just run the app locally too
 - **Google Maps API:** Using the places API for autocompletion of Event locations
 
+### Local Dev Tech
+- **[NGROK:](https://ngrok.com/)** We need NGROK for the login webhook to work, this is fine with a one developer but 
+TODO!
+  we need to find a solution that doesn't entail setting up a Clerk account for every dev...
+  :-(
+
 ## TODOS
 
 - [ ] Duplicate Event name issue.  Maybe we have repeat event with the same name.
@@ -99,17 +105,25 @@ npm install
 ```
 
 4. Copy [.env.template](/.env.template) as `.env.local`
-5. Setup [Clerk](clerk.com/) account, and add keys to `.env.local` file
+5. Setup [Clerk](http://clerk.com/) account, and add keys to `.env.local` file
+6. Ensure [NGROK](https://ngrok.com/) is setup with the webhook in Clerk. See [Clerk README.MD](src/app/api/webhook/clerk/README.md)
+for detail on this...
 
 ### Start Development
 
-6. Run the development server:
+1. Start ngrok in one terminal (replace the url with the webhook URL used above):
 
+```bash
+ngrok http --url=yeti-brief-mastiff.ngrok-free.app 3000
 ```
+
+2. Run the development server in another terminal:
+
+```bash
 docker compose up
 ```
 
-5. Open your browser and go to http://localhost:3000
+3. Open your browser and go to http://localhost:3000
 
 ## Hosting
 
